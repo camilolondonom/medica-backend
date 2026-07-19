@@ -2,10 +2,6 @@ package com.consultorio.backend.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -15,32 +11,19 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "usuarios")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor  // Constructor vacío obligatorio para JPA
+@AllArgsConstructor // Constructor completo
 public class Usuario {
-
+    
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_usuario")
-    private Integer idUsuario;
-
-    @Column(name = "username", nullable = false, unique = true, length = 50)
-    private String username;
-
-    // Almacenará la contraseña encriptada (nunca en texto plano)
-    @Column(name = "password", nullable = false, length = 255)
-    private String password;
-
-    @Column(name = "nombre_completo", nullable = false, length = 100)
+    private Long documento; // Ahora es la clave primaria manual
+    
+    @Column(name = "nombre_completo", nullable = false)
     private String nombreCompleto;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "rol", nullable = false, length = 20)
-    private Rol rol;
-
-    // --- ENUM PARA ROLES DEL SISTEMA ---
-    public enum Rol {
-        MEDICA,
-        RECEPCIONISTA
-    }
+    
+    @Column(nullable = false)
+    private String password; // Guardará el hash de los 6 dígitos numéricos
+    
+    @Column(nullable = false)
+    private String rol; // Valores: "MEDICO" o "AUXILIAR_ADMINISTRATIVO"
 }

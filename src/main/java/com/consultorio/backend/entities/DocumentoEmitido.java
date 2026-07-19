@@ -29,9 +29,9 @@ public class DocumentoEmitido {
     @Column(name = "id_documento_emitido")
     private Integer idDocumentoEmitido;
 
-    // RELACIÓN: Muchos documentos pueden ser emitidos a un mismo paciente
+    // CORRECCIÓN: Apuntar al ID del Paciente en la base de datos
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_documento", nullable = false)
+    @JoinColumn(name = "id_paciente", nullable = false) 
     private Paciente paciente;
 
     @Enumerated(EnumType.STRING)
@@ -41,11 +41,9 @@ public class DocumentoEmitido {
     @Column(name = "fecha_emision", nullable = false)
     private LocalDate fechaEmision = LocalDate.now();
 
-    // Columna mágica: Guarda el JSON dinámico como texto largo (TEXT / LONGTEXT en MySQL)
     @Column(name = "contenido_dinamico", nullable = false, columnDefinition = "TEXT")
     private String contenidoDinamico;
 
-    // --- ENUM PARA LOS 4 TIPOS DE DOCUMENTOS DEL NEGOCIO ---
     public enum TipoDocumento {
         MEDICO_GENERAL,
         HUELLA,

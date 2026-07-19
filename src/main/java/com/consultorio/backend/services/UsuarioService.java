@@ -4,22 +4,22 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.consultorio.backend.entities.Usuario; // Importación nueva
+import com.consultorio.backend.entities.Usuario;
 import com.consultorio.backend.repositories.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor // Genera el constructor para campos final
+@RequiredArgsConstructor 
 public class UsuarioService {
 
-    // Cambiamos @Autowired por final
     private final UsuarioRepository usuarioRepository;
 
     public Usuario registrarUsuario(Usuario usuario) {
-        Optional<Usuario> usuarioExistente = usuarioRepository.findByUsername(usuario.getUsername());
+        // Buscamos por documento en lugar de username
+        Optional<Usuario> usuarioExistente = usuarioRepository.findByDocumento(usuario.getDocumento());
         if (usuarioExistente.isPresent()) {
-            throw new RuntimeException("El nombre de usuario ya está en uso.");
+            throw new RuntimeException("El número de documento ya se encuentra registrado.");
         }
         return usuarioRepository.save(usuario);
     }

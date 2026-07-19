@@ -1,0 +1,9 @@
+POST http://localhost:8080/api/usuarios/registro
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "password123",
+  "nombreCompleto": "Camilo Pérez",
+  "rol": "MEDICO"
+}
