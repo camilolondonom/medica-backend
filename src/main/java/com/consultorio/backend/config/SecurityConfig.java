@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher; // Importación clave
 import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
@@ -28,12 +29,13 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             
-            // CRÍTICO: Desactivar explícitamente los puntos de entrada que Spring activa por defecto
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
             
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/usuarios/registro", "/api/usuarios/registro/**").permitAll()
+                // CORRECCIÓN: Usar AntPathRequestMatcher obliga a Spring Security a interceptar la ruta exacta
+                .requestMatchers(new AntPathRequestMatcher("/api/usuarios/registro")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/usuarios/login")).permitAll()
                 .anyRequest().authenticated()
             );
 

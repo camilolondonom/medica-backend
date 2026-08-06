@@ -23,4 +23,8 @@ public class UsuarioService {
         }
         return usuarioRepository.save(usuario);
     }
+    public Optional<Usuario> buscarPorDocumento(Long documento) {
+    return usuarioRepository.findByDocumento(documento); 
+    // Nota: Asegúrate de que tu UsuarioRepository tenga definido: Optional<Usuario> findByDocumento(Long documento);
+    }
 }
