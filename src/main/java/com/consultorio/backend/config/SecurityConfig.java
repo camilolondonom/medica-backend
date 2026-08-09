@@ -8,7 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher; // Importación clave
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
@@ -33,9 +33,10 @@ public class SecurityConfig {
             .httpBasic(basic -> basic.disable())
             
             .authorizeHttpRequests(auth -> auth
-                // CORRECCIÓN: Usar AntPathRequestMatcher obliga a Spring Security a interceptar la ruta exacta
                 .requestMatchers(new AntPathRequestMatcher("/api/usuarios/registro")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/usuarios/login")).permitAll()
+                // PERMISOS PARA WEBSOCKET: Permite el handshake público
+                .requestMatchers(new AntPathRequestMatcher("/ws-turnos/**")).permitAll()
                 .anyRequest().authenticated()
             );
 
