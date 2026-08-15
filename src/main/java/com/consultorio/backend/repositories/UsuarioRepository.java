@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import com.consultorio.backend.entities.Usuario;
 
-@Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Cambiado de findByUsername a findById (que mapea con documento)
     // O puedes usar findByDocumento si prefieres mantener la semántica:

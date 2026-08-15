@@ -18,27 +18,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(request -> {
-                CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(List.of("http://localhost:5173"));
-                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
-                config.setAllowCredentials(true);
-                return config;
-            }))
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
-            .formLogin(form -> form.disable())
-            .httpBasic(basic -> basic.disable())
-            
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/api/usuarios/registro")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/usuarios/login")).permitAll()
-                // PERMISOS PARA WEBSOCKET: Permite el handshake público
-                .requestMatchers(new AntPathRequestMatcher("/ws-turnos/**")).permitAll()
-                .anyRequest().authenticated()
-            );
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of("http://localhost:5173"));
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
+                    config.setAllowCredentials(true);
+                    return config;
+                }))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
+
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(new AntPathRequestMatcher("/api/usuarios/registro")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/usuarios/login")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/atenciones/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/ws-turnos/**")).permitAll()
+                        .anyRequest().authenticated());
 
         return http.build();
     }
