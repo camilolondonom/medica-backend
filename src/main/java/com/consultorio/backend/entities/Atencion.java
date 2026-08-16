@@ -50,12 +50,12 @@ public class Atencion {
     private LocalTime horaLlegada;
 
     // --- ENUMS PARA CONTEXTO ESTRICTO DEL NEGOCIO ---
-    
+
     public enum TipoServicio {
         CONSULTA_GENERAL, CERT_MAYOR, CERT_MENOR, HUELLA, CTO_DLLO, REVISION_CONSULTA
     }
 
     public enum EstadoTurno {
-        ESPERA, AUSENTE, CONSULTA, ATENDIDO
+        ESPERA, AUSENTE, LLAMADO, CONSULTA, ATENDIDO
     }
 }

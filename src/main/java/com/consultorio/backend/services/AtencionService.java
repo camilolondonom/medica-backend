@@ -67,8 +67,9 @@ public class AtencionService {
     @Transactional
     public AtencionResponse marcarAusente(Integer idAtencion) {
         Atencion atencion = obtenerOArrojar(idAtencion);
-        if (atencion.getEstadoTurno() != EstadoTurno.ESPERA) {
-            throw new IllegalStateException("Solo se puede marcar Ausente a un paciente que está En espera.");
+        EstadoTurno estadoActual = atencion.getEstadoTurno();
+        if (estadoActual != EstadoTurno.ESPERA && estadoActual != EstadoTurno.LLAMADO) {
+            throw new IllegalStateException("Solo se puede marcar Ausente desde Espera o Llamado.");
         }
         atencion.setEstadoTurno(EstadoTurno.AUSENTE);
         atencionRepository.save(atencion);
@@ -93,9 +94,17 @@ public class AtencionService {
     public LlamarSiguienteResponse llamarSiguiente(LlamarSiguienteRequest req) {
         LocalDate hoy = LocalDate.now();
 
+        // GUARD: no permitir llamar a otro si ya hay alguien esperando confirmación
+        boolean yaHayLlamado = atencionRepository
+                .findFirstByFechaAndEstadoTurnoOrderByHoraLlegadaAsc(hoy, EstadoTurno.LLAMADO)
+                .isPresent();
+        if (yaHayLlamado) {
+            throw new IllegalStateException("Ya hay un paciente llamado pendiente de confirmar ingreso.");
+        }
+
         AtencionResponse cerradoDto = null;
-        Optional<Atencion> actualEnConsulta =
-                atencionRepository.findFirstByFechaAndEstadoTurnoOrderByHoraLlegadaAsc(hoy, EstadoTurno.CONSULTA);
+        Optional<Atencion> actualEnConsulta = atencionRepository
+                .findFirstByFechaAndEstadoTurnoOrderByHoraLlegadaAsc(hoy, EstadoTurno.CONSULTA);
 
         if (actualEnConsulta.isPresent()) {
             Atencion actual = actualEnConsulta.get();
@@ -106,7 +115,8 @@ public class AtencionService {
                 }
                 int orden = 1;
                 for (String codigo : req.getDiagnosticos()) {
-                    if (codigo == null || codigo.isBlank()) continue;
+                    if (codigo == null || codigo.isBlank())
+                        continue;
                     DiagnosticoAtencion dx = new DiagnosticoAtencion();
                     dx.setAtencion(actual);
                     dx.setCodigoDx(codigo.trim());
@@ -120,19 +130,31 @@ public class AtencionService {
             cerradoDto = toResponse(actual, listarDxDe(actual.getIdAtencion()));
         }
 
-        AtencionResponse enConsultaDto = null;
-        Optional<Atencion> siguiente =
-                atencionRepository.findFirstByFechaAndEstadoTurnoOrderByHoraLlegadaAsc(hoy, EstadoTurno.ESPERA);
+        AtencionResponse llamadoDto = null;
+        Optional<Atencion> siguiente = atencionRepository.findFirstByFechaAndEstadoTurnoOrderByHoraLlegadaAsc(hoy,
+                EstadoTurno.ESPERA);
 
         if (siguiente.isPresent()) {
             Atencion nuevo = siguiente.get();
-            nuevo.setEstadoTurno(EstadoTurno.CONSULTA);
+            nuevo.setEstadoTurno(EstadoTurno.LLAMADO); // <-- antes era CONSULTA
             atencionRepository.save(nuevo);
-            enConsultaDto = toResponse(nuevo, List.of());
+            llamadoDto = toResponse(nuevo, List.of());
         }
 
         broadcastListaDelDia();
-        return new LlamarSiguienteResponse(cerradoDto, enConsultaDto);
+        return new LlamarSiguienteResponse(cerradoDto, llamadoDto);
+    }
+
+    @Transactional
+    public AtencionResponse confirmarIngreso(Integer idAtencion) {
+        Atencion atencion = obtenerOArrojar(idAtencion);
+        if (atencion.getEstadoTurno() != EstadoTurno.LLAMADO) {
+            throw new IllegalStateException("Solo se puede confirmar ingreso a un paciente en estado Llamado.");
+        }
+        atencion.setEstadoTurno(EstadoTurno.CONSULTA);
+        atencionRepository.save(atencion);
+        broadcastListaDelDia();
+        return toResponse(atencion, List.of());
     }
 
     // --- CONSULTAS ---
@@ -170,8 +192,7 @@ public class AtencionService {
                 a.getEstadoTurno().name(),
                 a.getFecha().toString(),
                 a.getHoraLlegada().toString(),
-                diagnosticos
-        );
+                diagnosticos);
     }
 
     private void broadcastListaDelDia() {

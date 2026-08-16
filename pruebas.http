@@ -7,3 +7,88 @@ Content-Type: application/json
   "nombreCompleto": "Camilo Pérez",
   "rol": "MEDICO"
 }
+
+### 1. Registrar Paciente 1
+POST http://localhost:8080/api/atenciones
+Content-Type: application/json
+
+{
+  "documento": 2001,
+  "nombreCompleto": "Ana Torres",
+  "tipoServicio": "CONSULTA_GENERAL"
+}
+
+### 2. Registrar Paciente 2
+POST http://localhost:8080/api/atenciones
+Content-Type: application/json
+
+{
+  "documento": 2002,
+  "nombreCompleto": "Carlos Ruiz",
+  "tipoServicio": "CERT_MAYOR"
+}
+
+### 3. Registrar Paciente 3
+POST http://localhost:8080/api/atenciones
+Content-Type: application/json
+
+{
+  "documento": 2003,
+  "nombreCompleto": "Beatriz Gómez",
+  "tipoServicio": "HUELLA"
+}
+
+### 4. Ver la fila (los 3 deben estar en ESPERA)
+GET http://localhost:8080/api/atenciones
+
+### 5. Llamar al siguiente (nadie en consulta -> "cerrado" null)
+### Debe poner a Ana en estado LLAMADO (no CONSULTA)
+POST http://localhost:8080/api/atenciones/llamar-siguiente
+Content-Type: application/json
+
+{
+  "diagnosticos": []
+}
+
+### 6. PRUEBA DEL GUARD: intentar llamar de nuevo sin confirmar a Ana
+### Debe fallar con 400 y el mensaje "Ya hay un paciente llamado..."
+POST http://localhost:8080/api/atenciones/llamar-siguiente
+Content-Type: application/json
+
+{
+  "diagnosticos": []
+}
+
+### 7. Confirmar el ingreso de Ana (usa el idAtencion real del paso 1 o 5)
+### Ahora sí debe pasar Ana a CONSULTA
+PATCH http://localhost:8080/api/atenciones/16/confirmar-ingreso
+
+### 8. Ahora sí llamar al siguiente: cierra a Ana (ATENDIDO, con DX) y llama a Carlos (LLAMADO)
+POST http://localhost:8080/api/atenciones/llamar-siguiente
+Content-Type: application/json
+
+{
+  "diagnosticos": ["J00", "Z00.0"]
+}
+
+### 9. PRUEBA: marcar Ausente a Carlos ESTANDO en LLAMADO (no respondió al llamado)
+### Debe funcionar ahora (antes solo se podía desde ESPERA)
+PATCH http://localhost:8080/api/atenciones/17/ausente
+
+### 10. Llamar siguiente otra vez: como Carlos está AUSENTE, debe saltarlo y llamar a Beatriz
+POST http://localhost:8080/api/atenciones/llamar-siguiente
+Content-Type: application/json
+
+{
+  "diagnosticos": []
+}
+
+### 11. Confirmar ingreso de Beatriz
+PATCH http://localhost:8080/api/atenciones/18/confirmar-ingreso
+
+### 12. PRUEBA: intentar confirmar ingreso de alguien que NO está en LLAMADO
+### Debe fallar con 400 (Beatriz ya está en CONSULTA, no en LLAMADO)
+PATCH http://localhost:8080/api/atenciones/18/confirmar-ingreso
+
+### 13. Ver lista de atendidos del día (debe aparecer Ana con sus 2 DX)
+GET http://localhost:8080/api/atenciones/atendidos
