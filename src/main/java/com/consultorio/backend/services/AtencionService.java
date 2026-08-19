@@ -41,7 +41,7 @@ public class AtencionService {
                 .orElseGet(() -> {
                     Paciente nuevo = new Paciente();
                     nuevo.setIdDocumento(req.getDocumento());
-                    nuevo.setNombreCompleto(req.getNombreCompleto());
+                                nuevo.setNombreCompleto(req.getNombreCompleto().trim().toUpperCase());
                     if (req.getFechaNacimiento() != null && !req.getFechaNacimiento().isBlank()) {
                         nuevo.setFechaNacimiento(LocalDate.parse(req.getFechaNacimiento()));
                     }
@@ -119,7 +119,7 @@ public class AtencionService {
                         continue;
                     DiagnosticoAtencion dx = new DiagnosticoAtencion();
                     dx.setAtencion(actual);
-                    dx.setCodigoDx(codigo.trim());
+                        dx.setCodigoDx(codigo.trim().toUpperCase());
                     dx.setOrden(orden++);
                     diagnosticoRepository.save(dx);
                 }
